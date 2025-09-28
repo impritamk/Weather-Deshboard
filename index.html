@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            transition: background 0.5s ease;
+        }
+
+        body.night {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        }
+
+        body.rainy {
+            background: linear-gradient(135deg, #636fa4 0%, #e8cbc0 100%);
+        }
+
+        body.snowy {
+            background: linear-gradient(135deg, #83a4d4 0%, #b6fbff 100%);
+        }
+
+        .weather-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 450px;
+            width: 100%;
+            text-align: center;
+            color: white;
+            transition: all 0.5s ease;
+        }
+
+        .weather-container:hover {
+            transform: translateY(-5px);
+        }
+
+        .location {
+            font-size: 24px;
+            font-weight: 300;
+            margin-bottom: 10px;
+            opacity: 0.9;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 8px 12px;
+            border-radius: 10px;
+        }
+
+        .location:hover {
+            background: rgba(255, 255, 255, 0.1);
+            opacity: 1;
+        }
+
+        .location-input {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            padding: 8px 12px;
+            font-size: 24px;
+            font-weight: 300;
+            color: white;
+            text-align: center;
+            width: 100%;
+            margin-bottom: 10px;
+            outline: none;
+            backdrop-filter: blur(10px);
+            display: none;
+        }
+
+        .location-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .location-input:focus {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .date {
+            font-size: 16px;
+            opacity: 0.7;
+            margin-bottom: 30px;
+        }
+
+        .main-weather {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+            gap: 20px;
+        }
+
+        .weather-icon {
+            font-size: 80px;
+            animation: float 3s ease-in-out infinite;
+            transition: all 0.5s ease;
+        }
+
+        .weather-icon.rain {
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        .weather-icon.snow {
+            animation: sway 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+        }
+
+        @keyframes sway {
+            0%, 100% { transform: translateX(0px); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .temperature {
+            font-size: 72px;
+            font-weight: 100;
+            line-height: 1;
+            transition: all 0.5s ease;
+        }
+
+        .weather-description {
+            font-size: 20px;
+            font-weight: 300;
+            margin-bottom: 30px;
+            text-transform: capitalize;
+            transition: all 0.5s ease;
+        }
+
+        .weather-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .detail-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .detail-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .detail-label {
+            font-size: 14px;
+            opacity: 0.7;
+            margin-bottom: 5px;
+        }
+
+        .detail-value {
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .hourly-forecast {
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            padding: 20px 0;
+            margin-top: 20px;
+        }
+
+        .hourly-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 15px;
+            min-width: 80px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .hourly-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .hourly-time {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-bottom: 8px;
+        }
+
+        .hourly-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .hourly-temp {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .last-updated {
+            font-size: 12px;
+            opacity: 0.6;
+            margin-top: 20px;
+        }
+
+        .loading {
+            opacity: 0.6;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        @media (max-width: 480px) {
+            .weather-container {
+                padding: 30px 20px;
+            }
+            
+            .main-weather {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .weather-icon {
+                font-size: 60px;
+            }
+            
+            .temperature {
+                font-size: 56px;
+            }
+            
+            .weather-details {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="weather-container">
+        <div class="location" id="location">Ranchi, India</div>
+        <input type="text" class="location-input" id="location-input" placeholder="Enter location">
+        <div class="date" id="date">Sunday, September 28</div>
+        
+        <div class="main-weather">
+            <div class="weather-icon" id="weather-icon">☀️</div>
+            <div class="temperature" id="temperature">24°</div>
+        </div>
+        
+        <div class="weather-description" id="description">Sunny</div>
+        
+        <div class="weather-details">
+            <div class="detail-item">
+                <div class="detail-label">Feels like</div>
+                <div class="detail-value" id="feels-like">27°</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Humidity</div>
+                <div class="detail-value" id="humidity">65%</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Wind Speed</div>
+                <div class="detail-value" id="wind-speed">12 km/h</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">UV Index</div>
+                <div class="detail-value" id="uv-index">6</div>
+            </div>
+        </div>
+        
+        <div class="hourly-forecast" id="hourly-forecast">
+            <!-- Hourly forecast will be populated dynamically -->
+        </div>
+        
+        <div class="last-updated" id="last-updated">Last updated: 11:30 AM</div>
+    </div>
+
+    <script>
+        // Weather patterns for different locations
+        const locationWeatherData = {
+            // Indian cities
+            'ranchi': { icon: "🌤️", description: "Partly Cloudy", temp: 28, humidity: 72, windSpeed: 8, uvIndex: 7, timezone: 'Asia/Kolkata' },
+            'mumbai': { icon: "🌧️", description: "Monsoon", temp: 26, humidity: 85, windSpeed: 15, uvIndex: 4, timezone: 'Asia/Kolkata' },
+            'delhi': { icon: "☀️", description: "Hot", temp: 35, humidity: 45, windSpeed: 12, uvIndex: 9, timezone: 'Asia/Kolkata' },
+            'bangalore': { icon: "⛅", description: "Pleasant", temp: 24, humidity: 68, windSpeed: 6, uvIndex: 6, timezone: 'Asia/Kolkata' },
+            'kolkata': { icon: "🌧️", description: "Heavy Rain", temp: 27, humidity: 88, windSpeed: 18, uvIndex: 3, timezone: 'Asia/Kolkata' },
+            'chennai': { icon: "☀️", description: "Hot & Humid", temp: 32, humidity: 78, windSpeed: 10, uvIndex: 8, timezone: 'Asia/Kolkata' },
+            'hyderabad': { icon: "🌤️", description: "Warm", temp: 30, humidity: 55, windSpeed: 9, uvIndex: 7, timezone: 'Asia/Kolkata' },
+            'pune': { icon: "⛅", description: "Cloudy", temp: 25, humidity: 70, windSpeed: 7, uvIndex: 5, timezone: 'Asia/Kolkata' },
+            'jaipur': { icon: "☀️", description: "Sunny", temp: 33, humidity: 40, windSpeed: 14, uvIndex: 9, timezone: 'Asia/Kolkata' },
+            'kochi': { icon: "🌧️", description: "Tropical Rain", temp: 29, humidity: 82, windSpeed: 11, uvIndex: 4, timezone: 'Asia/Kolkata' },
+            
+            // International cities
+            'new york': { icon: "🌤️", description: "Partly Cloudy", temp: 22, humidity: 65, windSpeed: 12, uvIndex: 6, timezone: 'America/New_York' },
+            'london': { icon: "🌧️", description: "Light Rain", temp: 15, humidity: 78, windSpeed: 16, uvIndex: 2, timezone: 'Europe/London' },
+            'tokyo': { icon: "⛅", description: "Cloudy", temp: 20, humidity: 72, windSpeed: 8, uvIndex: 5, timezone: 'Asia/Tokyo' },
+            'paris': { icon: "☀️", description: "Sunny", temp: 18, humidity: 58, windSpeed: 10, uvIndex: 6, timezone: 'Europe/Paris' },
+            'sydney': { icon: "☀️", description: "Clear", temp: 25, humidity: 55, windSpeed: 14, uvIndex: 8, timezone: 'Australia/Sydney' },
+            'dubai': { icon: "☀️", description: "Hot", temp: 38, humidity: 45, windSpeed: 6, uvIndex: 10, timezone: 'Asia/Dubai' },
+            'moscow': { icon: "❄️", description: "Snow", temp: -5, humidity: 85, windSpeed: 20, uvIndex: 1, timezone: 'Europe/Moscow' },
+            'singapore': { icon: "⛈️", description: "Thunderstorm", temp: 30, humidity: 88, windSpeed: 12, uvIndex: 5, timezone: 'Asia/Singapore' },
+            'los angeles': { icon: "☀️", description: "Sunny", temp: 28, humidity: 50, windSpeed: 8, uvIndex: 8, timezone: 'America/Los_Angeles' },
+            'amsterdam': { icon: "🌧️", description: "Drizzle", temp: 12, humidity: 82, windSpeed: 18, uvIndex: 2, timezone: 'Europe/Amsterdam' },
+            
+            // Default fallback
+            'default': { icon: "🌤️", description: "Pleasant", temp: 22, humidity: 65, windSpeed: 10, uvIndex: 6, timezone: 'UTC' }
+        };
+
+        let currentWeatherData = {
+            location: "Ranchi, India",
+            temperature: 28,
+            feelsLike: 31,
+            description: "Partly Cloudy",
+            humidity: 72,
+            windSpeed: 8,
+            uvIndex: 7,
+            icon: "🌤️",
+            timezone: 'Asia/Kolkata'
+        };
+
+        // Function to get weather data for a location
+        function getWeatherForLocation(location) {
+            const cleanLocation = location.toLowerCase().trim();
+            const locationKey = Object.keys(locationWeatherData).find(key => 
+                cleanLocation.includes(key) || key.includes(cleanLocation.split(',')[0])
+            );
+            
+            const weather = locationWeatherData[locationKey] || locationWeatherData['default'];
+            
+            // Add some randomness to make it more dynamic
+            const tempVariation = Math.floor(Math.random() * 6) - 3; // -3 to +3
+            const humidityVariation = Math.floor(Math.random() * 20) - 10; // -10 to +10
+            const windVariation = Math.floor(Math.random() * 6) - 3; // -3 to +3
+            
+            return {
+                ...weather,
+                temp: Math.max(weather.temp + tempVariation, -20),
+                humidity: Math.max(10, Math.min(100, weather.humidity + humidityVariation)),
+                windSpeed: Math.max(0, weather.windSpeed + windVariation),
+                feelsLike: Math.max(weather.temp + tempVariation + Math.floor(Math.random() * 5), -15)
+            };
+        }
+
+        // Function to generate hourly forecast
+        function generateHourlyForecast(baseWeather) {
+            const forecast = [];
+            const currentHour = new Date().getHours();
+            const weatherIcons = [baseWeather.icon];
+            
+            // Add some variation to the forecast
+            if (baseWeather.icon === "☀️") weatherIcons.push("🌤️", "⛅");
+            else if (baseWeather.icon === "🌧️") weatherIcons.push("⛈️", "☁️");
+            else if (baseWeather.icon === "⛅") weatherIcons.push("☁️", "🌤️");
+            else if (baseWeather.icon === "❄️") weatherIcons.push("☁️", "🌨️");
+            
+            for (let i = 0; i < 5; i++) {
+                const hour = (currentHour + i + 1) % 24;
+                const displayHour = hour === 0 ? 12 : (hour > 12 ? hour - 12 : hour);
+                const ampm = hour < 12 ? 'AM' : 'PM';
+                const tempChange = Math.floor(Math.random() * 6) - 3;
+                const icon = weatherIcons[Math.floor(Math.random() * weatherIcons.length)];
+                
+                forecast.push({
+                    time: `${displayHour} ${ampm}`,
+                    icon: icon,
+                    temp: baseWeather.temp + tempChange
+                });
+            }
+            
+            return forecast;
+        }
+
+        // Function to get current date string
+        function getCurrentDate() {
+            const now = new Date();
+            const options = { 
+                weekday: 'long', 
+                month: 'long', 
+                day: 'numeric' 
+            };
+            return now.toLocaleDateString('en-US', options);
+        }
+
+        // Function to get current time string
+        function getCurrentTime(timezone = 'UTC') {
+            const now = new Date();
+            return now.toLocaleTimeString('en-US', { 
+                hour: 'numeric', 
+                minute: '2-digit',
+                hour12: true,
+                timeZone: timezone
+            });
+        }
+
+        // Function to update background based on weather
+        function updateBackground(weatherIcon) {
+            const body = document.body;
+            body.className = ''; // Reset classes
+            
+            if (weatherIcon.includes('🌧️') || weatherIcon.includes('⛈️')) {
+                body.classList.add('rainy');
+            } else if (weatherIcon.includes('❄️') || weatherIcon.includes('🌨️')) {
+                body.classList.add('snowy');
+            } else {
+                const currentHour = new Date().getHours();
+                if (currentHour < 6 || currentHour > 19) {
+                    body.classList.add('night');
+                }
+            }
+        }
+
+        // Function to update weather icon animation
+        function updateWeatherIconAnimation(icon) {
+            const weatherIcon = document.getElementById('weather-icon');
+            weatherIcon.className = 'weather-icon';
+            
+            if (icon.includes('🌧️') || icon.includes('⛈️')) {
+                weatherIcon.classList.add('rain');
+            } else if (icon.includes('❄️') || icon.includes('🌨️')) {
+                weatherIcon.classList.add('snow');
+            }
+        }
+
+        // Function to update the weather display
+        function updateWeatherDisplay() {
+            document.getElementById('location').textContent = currentWeatherData.location;
+            document.getElementById('date').textContent = getCurrentDate();
+            document.getElementById('weather-icon').textContent = currentWeatherData.icon;
+            document.getElementById('temperature').textContent = currentWeatherData.temperature + '°';
+            document.getElementById('description').textContent = currentWeatherData.description;
+            document.getElementById('feels-like').textContent = currentWeatherData.feelsLike + '°';
+            document.getElementById('humidity').textContent = currentWeatherData.humidity + '%';
+            document.getElementById('wind-speed').textContent = currentWeatherData.windSpeed + ' km/h';
+            document.getElementById('uv-index').textContent = currentWeatherData.uvIndex;
+            document.getElementById('last-updated').textContent = 'Last updated: ' + getCurrentTime(currentWeatherData.timezone);
+            
+            // Update hourly forecast
+            const hourlyForecast = generateHourlyForecast(currentWeatherData);
+            const hourlyContainer = document.getElementById('hourly-forecast');
+            hourlyContainer.innerHTML = '';
+            
+            hourlyForecast.forEach(item => {
+                const hourlyItem = document.createElement('div');
+                hourlyItem.className = 'hourly-item';
+                hourlyItem.innerHTML = `
+                    <div class="hourly-time">${item.time}</div>
+                    <div class="hourly-icon">${item.icon}</div>
+                    <div class="hourly-temp">${item.temp}°</div>
+                `;
+                hourlyContainer.appendChild(hourlyItem);
+            });
+            
+            // Update background and animations
+            updateBackground(currentWeatherData.icon);
+            updateWeatherIconAnimation(currentWeatherData.icon);
+        }
+
+        // Function to handle location change
+        function updateLocationWeather(location) {
+            // Show loading state
+            const container = document.querySelector('.weather-container');
+            container.classList.add('loading');
+            
+            setTimeout(() => {
+                const weatherData = getWeatherForLocation(location);
+                
+                currentWeatherData = {
+                    location: location,
+                    temperature: weatherData.temp,
+                    feelsLike: weatherData.feelsLike,
+                    description: weatherData.description,
+                    humidity: weatherData.humidity,
+                    windSpeed: weatherData.windSpeed,
+                    uvIndex: weatherData.uvIndex,
+                    icon: weatherData.icon,
+                    timezone: weatherData.timezone
+                };
+                
+                updateWeatherDisplay();
+                container.classList.remove('loading');
+            }, 1000); // Simulate API delay
+        }
+
+        // Function to handle location editing
+        function enableLocationEdit() {
+            const locationDiv = document.getElementById('location');
+            const locationInput = document.getElementById('location-input');
+            
+            locationDiv.style.display = 'none';
+            locationInput.style.display = 'block';
+            locationInput.value = currentWeatherData.location;
+            locationInput.focus();
+            locationInput.select();
+        }
+
+        // Function to save location changes
+        function saveLocationChange() {
+            const locationDiv = document.getElementById('location');
+            const locationInput = document.getElementById('location-input');
+            const newLocation = locationInput.value.trim();
+            
+            if (newLocation && newLocation !== currentWeatherData.location) {
+                updateLocationWeather(newLocation);
+            }
+            
+            locationInput.style.display = 'none';
+            locationDiv.style.display = 'block';
+        }
+
+        // Add click event to location for editing
+        document.getElementById('location').addEventListener('click', enableLocationEdit);
+
+        // Handle Enter key and blur events for location input
+        document.getElementById('location-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                saveLocationChange();
+            }
+        });
+
+        document.getElementById('location-input').addEventListener('blur', saveLocationChange);
+
+        // Initialize the weather display
+        updateWeatherDisplay();
+
+        // Add some interactivity to detail items
+        const detailItems = document.querySelectorAll('.detail-item');
+        detailItems.forEach(item => {
+            item.addEventListener('mouseenter', function() {
+                this.style.boxShadow = '0 10px 20px rgba(255, 255, 255, 0.1)';
+            });
+            
+            item.addEventListener('mouseleave', function() {
+                this.style.boxShadow = 'none';
+            });
+        });
+
+        // Update time every minute
+        setInterval(function() {
+            document.getElementById('last-updated').textContent = 'Last updated: ' + getCurrentTime(currentWeatherData.timezone);
+        }, 60000);
+
+        // Add automatic weather updates every 10 minutes
+        setInterval(function() {
+            updateLocationWeather(currentWeatherData.location);
+        }, 600000);
+    </script>
+</body>
+</html>
